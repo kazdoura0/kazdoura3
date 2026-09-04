@@ -82,7 +82,7 @@ ok((await api('/api/bridge/config', { headers: { Authorization: 'Bearer nope' } 
 const claim = await api('/api/bridge/claim', { method: 'POST', headers: BH, body: { agent: 'test-agent', limit: 10 } })
 const claimedIds = claim.json.jobs.map((j) => j.id)
 ok(claimedIds.includes(j1.id) && claimedIds.includes(j2.id), 'الجسر استلم تذكرتي القسمين')
-ok(claim.json.jobs.find((j) => j.id === j1.id).host === '192.168.1.201', 'المهمة تحمل عنوان الطابعة')
+ok(claim.json.jobs.find((j) => j.id === j1.id).host === cfg.json.printers.find((p) => p.id === 1).host, 'المهمة تحمل عنوان الطابعة')
 const claim2 = await api('/api/bridge/claim', { method: 'POST', headers: BH, body: { agent: 'test-agent-2', limit: 10 } })
 ok(!claim2.json.jobs.some((j) => j.id === j1.id), 'لا يمكن استلام نفس المهمة مرتين')
 await api(`/api/bridge/jobs/${j1.id}/result`, { method: 'POST', headers: BH, body: { ok: true } })

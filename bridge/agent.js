@@ -120,6 +120,7 @@ async function processJob(job) {
     log(`  ✓ printed ${job.id}`)
   } catch (e) {
     log(`  ✖ ${job.id}: ${e.message}`)
+    if (/تعذر الاتصال|انتهت مهلة/.test(e.message)) cooldownUntil.set(job.printer_id, Date.now() + COOLDOWN_MS)
     try { await api(`/api/bridge/jobs/${job.id}/result`, { ok: false, error: e.message, agent: CFG.agent }) } catch (e2) { log('  ! could not report result:', e2.message) }
   }
 }
@@ -127,6 +128,9 @@ async function processJob(job) {
 let printers = []
 let pollSeconds = 3
 let stopping = false
+// per-printer cooldown after a connection failure, so an offline printer isn't hammered every poll
+const cooldownUntil = new Map()
+const COOLDOWN_MS = 20000
 
 async function loadConfig() {
   const r = await api('/api/bridge/config')
@@ -140,9 +144,11 @@ async function heartbeat() {
   try {
     const statuses = await Promise.all(printers.filter((p) => p.is_active).map(async (p) => {
       const r = p.host ? await probe(p.host, Number(p.port) || 9100) : { online: false, error: 'no host' }
+      if (!r.online) cooldownUntil.set(p.id, Date.now() + COOLDOWN_MS)
       return { id: p.id, online: r.online, error: r.error }
     }))
     await api('/api/bridge/heartbeat', { agent: CFG.agent, printers: statuses, version: '1.0.0' })
+    for (const s of statuses) if (s.online) cooldownUntil.delete(s.id)
     const off = statuses.filter((s) => !s.online)
     if (off.length) log('♥ heartbeat — offline:', off.map((s) => `${printers.find((p) => p.id === s.id)?.name} (${s.error})`).join(', '))
   } catch (e) { log('♥ heartbeat failed:', e.message) }
@@ -153,8 +159,17 @@ async function pollOnce() {
   // print sequentially per printer so tickets don't interleave; different printers in parallel
   const byPrinter = new Map()
   for (const j of r.jobs || []) { if (!byPrinter.has(j.printer_id)) byPrinter.set(j.printer_id, []); byPrinter.get(j.printer_id).push(j) }
-  await Promise.all([...byPrinter.values()].map(async (list) => { for (const j of list) await processJob(j) }))
-  return (r.jobs || []).length
+  await Promise.all([...byPrinter.entries()].map(async ([pid, list]) => {
+    for (const j of list) {
+      if ((cooldownUntil.get(pid) || 0) > Date.now()) {
+        // printer recently unreachable: release the job back without consuming an attempt
+        await api(`/api/bridge/jobs/${j.id}/release`, { agent: CFG.agent }).catch(() => {})
+        continue
+      }
+      await processJob(j)
+    }
+  }))
+  return (r.jobs || []).filter((j) => (cooldownUntil.get(j.printer_id) || 0) <= Date.now()).length
 }
 
 async function main() {

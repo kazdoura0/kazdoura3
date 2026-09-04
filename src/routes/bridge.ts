@@ -71,6 +71,16 @@ bridge.post('/jobs/:id/result', async (c) => {
   return c.json({ ok: true })
 })
 
+/** Release a claimed job back to pending WITHOUT consuming an attempt (printer temporarily unreachable) */
+bridge.post('/jobs/:id/release', async (c) => {
+  const r = await run(
+    c.env.DB,
+    "UPDATE print_jobs SET status='pending', claimed_by=NULL, claimed_at=NULL, updated_at=datetime('now') WHERE id=? AND status='printing'",
+    c.req.param('id')
+  )
+  return c.json({ ok: true, released: r.meta.changes === 1 })
+})
+
 /** Heartbeat: agent reports reachability of each printer */
 bridge.post('/heartbeat', async (c) => {
   const db = c.env.DB

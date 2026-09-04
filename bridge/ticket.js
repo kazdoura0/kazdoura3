@@ -14,10 +14,13 @@ const FONT_DIR = path.join(__dirname, 'fonts')
 try {
   GlobalFonts.registerFromPath(path.join(FONT_DIR, 'NotoKufiArabic-Regular.ttf'), 'KZ')
   GlobalFonts.registerFromPath(path.join(FONT_DIR, 'NotoKufiArabic-Bold.ttf'), 'KZ')
+  // Latin digits / punctuation / currency symbols fallback (Kufi lacks ×, /, :, ₺ …)
+  GlobalFonts.registerFromPath(path.join(FONT_DIR, 'NotoSans-Regular.ttf'), 'KZLatin')
+  GlobalFonts.registerFromPath(path.join(FONT_DIR, 'NotoSans-Bold.ttf'), 'KZLatin')
 } catch (e) {
   console.warn('[ticket] could not register bundled fonts:', e.message)
 }
-const FAMILY = '"KZ", "Noto Kufi Arabic", "Segoe UI", "Arial", sans-serif'
+const FAMILY = '"KZ", "KZLatin", "Noto Kufi Arabic", "Noto Sans", "Segoe UI", "Arial", sans-serif'
 
 const DOTS = { 58: 384, 80: 576 } // printable dots at 203 dpi
 
@@ -100,7 +103,7 @@ function renderTicket(doc, opts = {}) {
     if (note) {
       meas.font = F(size - 6, false)
       const nh = Math.round((size - 6) * scale * 1.4)
-      for (const ln of wrap(meas, '↳ ' + note, nameW)) { ops.push({ t: 'text', s: ln, font: F(size - 6, false), align: 'right', dir: 'rtl', x: width - pad - qtyW, y }); y += nh }
+      for (const ln of wrap(meas, '- ' + note, nameW)) { ops.push({ t: 'text', s: ln, font: F(size - 6, false), align: 'right', dir: 'rtl', x: width - pad - qtyW, y }); y += nh }
     }
     y += 6
   }
@@ -134,7 +137,7 @@ function renderTicket(doc, opts = {}) {
     }
     sep(false, 3)
     row(money(doc.total !== undefined ? doc.total : doc.subtotal, cur), 'الإجمالي', { size: 36, bold: true })
-    for (const s of doc.secondary_totals || []) row(money(s.amount, s), `≈ ${s.code}`, { size: 24 })
+    for (const s of doc.secondary_totals || []) row(money(s.amount, s), `~ ${s.code}`, { size: 24 })
     sep(true, 2)
     if (doc.footer) text(doc.footer, { size: 24, align: 'center' })
     if (doc.check_id) text(doc.check_id, { size: 16, align: 'center', dir: 'ltr', gap: 0 })
