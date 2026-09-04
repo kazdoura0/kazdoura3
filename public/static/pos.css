@@ -4,7 +4,7 @@
 
 .topbar {
   display: flex; align-items: center; gap: 12px; padding: 8px 14px;
-  background: var(--ink); color: #fff; min-height: 60px; padding-top: max(8px, env(safe-area-inset-top));
+  background: var(--topbar); color: #fff; min-height: 60px; padding-top: max(8px, env(safe-area-inset-top));
 }
 .topbar .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 20px; }
 .topbar .brand i { color: var(--accent); }
@@ -35,14 +35,14 @@
 .table-card .tinfo { font-size: 14px; font-weight: 700; color: var(--ink-2); }
 .table-card .tstate { position: absolute; top: 8px; right: 8px; font-size: 11px; padding: 2px 8px; border-radius: 999px; font-weight: 800; }
 .table-card.empty { border-color: var(--line); }
-.table-card.empty .tstate { background: #eee; color: #777; }
-.table-card.occupied { border-color: var(--accent); background: #fff8e8; }
+.table-card.empty .tstate { background: var(--state-empty-bg); color: var(--state-empty-ink); }
+.table-card.occupied { border-color: var(--accent); background: var(--state-occ-bg); }
 .table-card.occupied .tstate { background: var(--accent); color: var(--accent-ink); }
-.table-card.billing { border-color: var(--info); background: #eef5fb; }
+.table-card.billing { border-color: var(--info); background: var(--state-bill-bg); }
 .table-card.billing .tstate { background: var(--info); color: #fff; }
-.table-card.awaiting_payment { border-color: var(--ok); background: #e9f7ee; }
+.table-card.awaiting_payment { border-color: var(--ok); background: var(--state-pay-bg); }
 .table-card.awaiting_payment .tstate { background: var(--ok); color: #fff; }
-.c-empty { background: #ddd; } .c-occ { background: var(--accent); } .c-bill { background: var(--info); } .c-pay { background: var(--ok); }
+.c-empty { background: var(--state-empty-bg); border: 1px solid var(--line); } .c-occ { background: var(--accent); } .c-bill { background: var(--info); } .c-pay { background: var(--ok); }
 
 /* ---- Order screen */
 .order-screen { flex: 1; display: grid; grid-template-columns: 1fr 380px; min-height: 0; }
@@ -77,7 +77,7 @@
 .qty-ctl button { width: 40px; height: 40px; font-size: 18px; font-weight: 800; background: var(--surface-2); }
 .qty-ctl button.del { color: var(--danger); }
 .qty-ctl span { min-width: 34px; text-align: center; font-weight: 800; }
-.line.sent { background: #fbfaf7; }
+.line.sent { background: var(--sent-bg); }
 .line.sent .lname { color: var(--ink-2); }
 .ticket-foot { border-top: 1px solid var(--line); padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
 .total-row { display: flex; justify-content: space-between; align-items: baseline; font-weight: 800; font-size: 20px; }
@@ -88,7 +88,7 @@
 .pj { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; padding: 4px 8px; border-radius: 8px; background: var(--surface-2); border: 1px solid var(--line); }
 .pj.printed { background: var(--ok-bg); color: var(--ok); border-color: transparent; }
 .pj.failed { background: var(--danger-bg); color: var(--danger); border-color: transparent; }
-.pj.pending, .pj.printing { background: var(--warn-bg); color: #7a5200; border-color: transparent; }
+.pj.pending, .pj.printing { background: var(--warn-bg); color: var(--pj-pending-ink); border-color: transparent; }
 .pj button { text-decoration: underline; font-weight: 700; color: inherit; }
 
 /* Bill modal */

@@ -13,7 +13,7 @@
     "db:reset": "rm -rf .wrangler/state/v3/d1 && npm run db:migrate:local",
     "db:console:local": "wrangler d1 execute kazdoura-production --local",
     "test:api": "node tests/api-e2e.mjs",
-    "test:ui": "node tests/ui/pos-e2e.mjs && node tests/ui/admin-e2e.mjs",
+    "test:ui": "node tests/ui/pos-e2e.mjs && node tests/ui/admin-e2e.mjs && node tests/ui/theme-e2e.mjs",
     "test": "npm run test:api",
     "cf-typegen": "wrangler types --env-interface CloudflareBindings"
   },

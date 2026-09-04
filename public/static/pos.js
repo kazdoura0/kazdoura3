@@ -109,10 +109,11 @@
         <div class="grow"></div>
         <button class="tb-btn ${S.view === 'tables' ? 'active' : ''}" id="nav-tables"><i class="fas fa-table-cells-large"></i> الطاولات</button>
         <span class="conn" id="conn"><i class="dot"></i><span>متصل</span></span>
-        <a class="tb-btn" href="/admin" title="لوحة التحكم"><i class="fas fa-gear"></i></a>
+        ${KZ.theme.button('tb-btn')}
       </header>
       <main class="pos-main" id="main"></main>`
     document.getElementById('nav-tables').addEventListener('click', () => goTables())
+    KZ.theme.bind(root)
   }
 
   // ---------- Tables screen

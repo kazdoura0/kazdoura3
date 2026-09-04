@@ -44,8 +44,9 @@
       ${field('كلمة مرور المدير', '<input class="input" type="password" id="pwd" required autofocus autocomplete="current-password">')}
       ${err ? `<p class="small" style="color:var(--danger)">${esc(err)}</p>` : ''}
       <button class="btn primary lg block" id="login-btn" data-busy-text="جارٍ الدخول…"><i class="fas fa-right-to-bracket"></i> دخول</button>
-      <a class="btn ghost block" href="/">الذهاب إلى نقطة البيع</a>
+      <div class="row" style="justify-content:space-between"><a class="btn ghost" href="/">الذهاب إلى نقطة البيع</a>${KZ.theme.button('btn ghost icon')}</div>
     </form></div>`
+    KZ.theme.bind($('#app'))
     $('#login-form').addEventListener('submit', (e) => {
       e.preventDefault()
       busy($('#login-btn'), async () => {
@@ -75,6 +76,7 @@
         <div class="spacer"></div>
         <div class="foot">
           <a class="nav-btn" href="/" target="_blank"><i class="fas fa-cash-register"></i>نقطة البيع</a>
+          <button class="nav-btn theme-btn" type="button" data-theme-toggle><i class="fas fa-moon"></i><i class="fas fa-sun"></i><span class="theme-label"></span></button>
           <button class="nav-btn" id="btn-logout"><i class="fas fa-right-from-bracket"></i>تسجيل الخروج</button>
         </div>
       </aside>
@@ -84,6 +86,7 @@
       </div></div>`
     $$('.nav-btn[data-page]').forEach((b) => b.addEventListener('click', () => go(b.dataset.page)))
     $('#btn-logout').addEventListener('click', logout)
+    KZ.theme.bind($('#side'))
     $('#btn-menu').addEventListener('click', () => { $('#side').classList.add('open'); const bd = document.createElement('div'); bd.className = 'side-backdrop'; bd.addEventListener('click', () => { $('#side').classList.remove('open'); bd.remove() }); document.body.appendChild(bd) })
     renderPage()
   }
@@ -554,9 +557,12 @@ node agent.js</pre></div>
       sales(c)
     }))
     $('#s-csv').addEventListener('click', () => {
-      const rows = [['التاريخ', 'الطاولة', 'العناصر', 'المجموع الفرعي', 'الخصم', 'الإجمالي', 'العملة', 'طريقة الدفع', 'المنتجات']]
-      r.sales.forEach((s) => rows.push([s.paid_at, s.table_number, s.items_count, s.subtotal, s.discount, s.total, s.currency_code, s.payment_method, s.items.map((i) => `${i.name} x${i.qty}`).join(' | ')]))
-      const csv = '\uFEFF' + rows.map((row) => row.map((v) => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n')
+      // Excel-friendly CSV: UTF-8 BOM, CRLF, local date & time in separate unambiguous columns (YYYY-MM-DD / HH:MM)
+      const PM = { cash: 'نقدي', card: 'بطاقة', transfer: 'تحويل' }
+      const rows = [['التاريخ', 'الوقت', 'الطاولة', 'عدد العناصر', 'المجموع الفرعي', 'الخصم', 'الإجمالي', 'العملة', 'طريقة الدفع', 'المنتجات']]
+      r.sales.forEach((s) => { const dt = KZ.csvDate(s.paid_at); rows.push([dt.date, dt.time, s.table_number, s.items_count, Number(s.subtotal || 0), Number(s.discount || 0), Number(s.total || 0), s.currency_code, PM[s.payment_method] || s.payment_method || '', s.items.map((i) => `${i.name} ×${i.qty}`).join(' | ')]) })
+      const cell = (v) => typeof v === 'number' ? String(v) : `"${String(v ?? '').replace(/"/g, '""')}"`
+      const csv = '\uFEFF' + rows.map((row) => row.map(cell).join(',')).join('\r\n') + '\r\n'
       const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); a.download = `kazdoura-sales-${f.from || 'all'}_${f.to || ''}.csv`; a.click()
     })
     $$('[data-sale]').forEach((btn) => btn.addEventListener('click', async () => {

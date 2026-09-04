@@ -68,6 +68,21 @@
 
   KZ.sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
+  // ---- Theme (light / dark). Persisted per device in localStorage; applied early by inline script in layout.
+  KZ.theme = {
+    get() { return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light' },
+    set(t) {
+      document.documentElement.setAttribute('data-theme', t === 'dark' ? 'dark' : 'light')
+      try { localStorage.setItem('kz_theme', t) } catch (_) {}
+      const meta = document.querySelector('meta[name="theme-color"]')
+      if (meta) meta.setAttribute('content', t === 'dark' ? '#0f0d0b' : '#1f1b16')
+    },
+    toggle() { KZ.theme.set(KZ.theme.get() === 'dark' ? 'light' : 'dark'); return KZ.theme.get() },
+    /** HTML for a toggle button; call KZ.theme.bind(el) after insertion */
+    button(cls) { return `<button class="${cls || 'btn icon'} theme-btn" type="button" data-theme-toggle title="الوضع الليلي / النهاري" aria-label="تبديل الوضع الليلي"><i class="fas fa-moon"></i><i class="fas fa-sun"></i></button>` },
+    bind(root) { (root || document).querySelectorAll('[data-theme-toggle]').forEach((b) => { if (!b._kzTheme) { b._kzTheme = true; b.addEventListener('click', () => KZ.theme.toggle()) } }) }
+  }
+
   KZ.esc = function (s) {
     return String(s === undefined || s === null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]))
   }
@@ -97,6 +112,14 @@
     const d = new Date(iso.includes('T') ? iso : iso.replace(' ', 'T') + 'Z')
     if (isNaN(d)) return iso
     return d.toLocaleString('ar-EG', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
+  }
+  /** Local date/time parts for spreadsheets: { date: 'YYYY-MM-DD', time: 'HH:MM' } */
+  KZ.csvDate = function (iso) {
+    if (!iso) return { date: '', time: '' }
+    const d = new Date(iso.includes('T') ? iso : iso.replace(' ', 'T') + 'Z')
+    if (isNaN(d)) return { date: iso, time: '' }
+    const p = (n) => String(n).padStart(2, '0')
+    return { date: `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`, time: `${p(d.getHours())}:${p(d.getMinutes())}` }
   }
   KZ.elapsed = function (iso) {
     if (!iso) return ''
