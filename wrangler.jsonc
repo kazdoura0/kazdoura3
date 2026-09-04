@@ -1,14 +1,14 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "webapp",
+  "name": "kazdoura",
   "compatibility_date": "2026-08-25",
   "pages_build_output_dir": "./dist",
   "compatibility_flags": ["nodejs_compat"],
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "webapp-production",
-      "database_id": "local-placeholder"
+      "database_name": "kazdoura-production",
+      "database_id": "2f0e7887-221e-4980-b23d-a5076acce1e4"
     }
   ]
 }

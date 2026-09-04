@@ -6,18 +6,18 @@
 
 - **الاسم**: كزدورة (Kazdoura)
 - **الهدف**: تسجيل الطلبات من الطاولات، توزيعها آلياً على طابعات المطبخ/البار، طباعة الفاتورة عند الطلب فقط، تسجيل المبيعات، وإدارة كل شيء من لوحة تحكم محمية.
-- **الحالة**: ✅ مكتمل ومختبر محلياً (API 95/95 · واجهة نقطة البيع E2E · لوحة التحكم 31/31 · جسر الطباعة مع طابعات شبكية وهمية) — **بانتظار اختيار طريقة النشر**.
+- **الحالة**: ✅ **منشور على الإنتاج** — https://kazdoura.pages.dev (مختبر: API 95/95 · نقطة البيع E2E · لوحة التحكم 31/31 · جسر الطباعة · السيناريو الإلزامي على قاعدة الإنتاج).
 
 ## الروابط
 
 | ما | الرابط |
 |---|---|
-| معاينة التطوير (Sandbox) | https://3000-if0swwheo2vr4c8f8kvou-2e77fc33.sandbox.novita.ai |
+| **الإنتاج** | **https://kazdoura.pages.dev** |
+| GitHub | https://github.com/kazdoura0/kazdoura3 |
 | نقطة البيع (iPad / كاشير) | `/` |
 | لوحة التحكم | `/admin` |
 | صفحة طباعة عبر المتصفح | `/print/job/:id` |
 | فحص الصحة | `/api/health` |
-| الإنتاج | _لم يُنشر بعد_ |
 
 > بيانات الدخول المحلية موجودة في `.dev.vars` (انظر `.dev.vars.example`). في الإنتاج تُضبط `ADMIN_PASSWORD` و`BRIDGE_TOKEN` كأسرار (secrets).
 
@@ -132,10 +132,11 @@ curl http://localhost:3000/api/health
 
 - **المنصة**: Cloudflare Pages + D1
 - **التقنيات**: Hono · TypeScript · Vite · Wrangler 4 · Vanilla JS · D1 (SQLite)
-- **الحالة**: ⏳ جاهز للنشر — يلزم تحديد الحساب (حساب Cloudflare خاص أو استضافة Genspark)
+- **الحالة**: ✅ نشط — مشروع Pages `kazdoura`، قاعدة D1 `kazdoura-production` (ENAM)، الأسرار `ADMIN_PASSWORD` و`BRIDGE_TOKEN` مضبوطة
+- **GitHub**: https://github.com/kazdoura0/kazdoura3 (فرع `main`)
 
 خطوات النشر:
-1. إنشاء قاعدة الإنتاج: `npx wrangler d1 create webapp-production` ووضع `database_id` في `wrangler.jsonc` (حالياً `local-placeholder`).
+1. إنشاء قاعدة الإنتاج: `npx wrangler d1 create kazdoura-production` ووضع `database_id` في `wrangler.jsonc` (حالياً `local-placeholder`).
 2. `npm run db:migrate:prod`
 3. `npm run deploy`
 4. الأسرار: `npx wrangler pages secret put ADMIN_PASSWORD` و`npx wrangler pages secret put BRIDGE_TOKEN`
@@ -143,7 +144,7 @@ curl http://localhost:3000/api/health
 
 ## ما لم يُنفَّذ بعد / خطوات مقترحة
 
-- النشر على الإنتاج (بانتظار اختيار طريقة النشر).
+- ربط Cloudflare Pages بمستودع GitHub للنشر التلقائي مع كل push، وربط دومين خاص.
 - أدوار مستخدمين متعددة (عامل/كاشير/مدير) بدل كلمة مرور إدارية واحدة.
 - دعم درج النقود وطابعات USB/Bluetooth في الجسر (البنية جاهزة: `openDrawer` في `ticket.js`).
 - تصدير التقارير (CSV/Excel) وتقارير الورديات.
