@@ -156,6 +156,9 @@
     S.tableId = id
     S.view = 'order'
     S.draft = loadDrafts()[id] || {}
+    S.check = null
+    S.items = []
+    S.printJobs = []
     saveView()
     document.getElementById('nav-tables').classList.remove('active')
     renderOrder(true)
