@@ -1,0 +1,47 @@
+/* Kazdoura — browser print page (thermal-style ticket) */
+.print-body { background: #e9ecef; margin: 0; padding: 20px 0 90px; display: flex; flex-direction: column; align-items: center; }
+.ticket {
+  background: #fff; color: #000; width: 80mm; max-width: 100%; padding: 6mm 4mm; box-sizing: border-box;
+  font-family: 'Cairo', 'Noto Sans Arabic', monospace, sans-serif; font-size: 13px; line-height: 1.45;
+  box-shadow: 0 6px 24px rgba(0,0,0,.12); direction: rtl;
+}
+.ticket.w58 { width: 58mm; font-size: 12px; padding: 4mm 3mm; }
+.ticket .store { text-align: center; font-weight: 800; font-size: 18px; margin-bottom: 2px; }
+.ticket .title { text-align: center; font-weight: 700; font-size: 15px; }
+.ticket .hdr { text-align: center; font-weight: 800; font-size: 20px; margin: 4px 0; padding: 3px 0; border-top: 2px dashed #000; border-bottom: 2px dashed #000; }
+.ticket .meta { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; margin: 4px 0; }
+.ticket .meta .tbl { font-size: 26px; font-weight: 900; }
+.ticket .sep { border-top: 1px dashed #000; margin: 6px 0; }
+.ticket .lines { width: 100%; border-collapse: collapse; }
+.ticket .lines td { padding: 3px 0; vertical-align: top; }
+.ticket .lines .qty { width: 34px; font-weight: 800; font-size: 15px; white-space: nowrap; }
+.ticket.kitchen .lines td { font-size: 16px; font-weight: 700; }
+.ticket.kitchen .lines .qty { font-size: 20px; }
+.ticket .lines .amt { text-align: left; white-space: nowrap; direction: ltr; }
+.ticket .lines .note { display: block; font-size: 12px; font-weight: 400; color: #222; }
+.ticket .lines .note::before { content: '↳ '; }
+.ticket .tot { display: flex; justify-content: space-between; padding: 2px 0; }
+.ticket .tot.grand { font-size: 18px; font-weight: 900; border-top: 2px solid #000; margin-top: 4px; padding-top: 5px; }
+.ticket .tot .n { direction: ltr; }
+.ticket .sec { font-size: 12px; color: #222; }
+.ticket .foot { text-align: center; margin-top: 8px; font-size: 12px; white-space: pre-line; }
+.ticket .small { font-size: 10px; color: #444; text-align: center; margin-top: 6px; direction: ltr; }
+.ticket .muted, .ticket .err { text-align: center; color: #666; padding: 20px 0; }
+.ticket .err { color: #b91c1c; font-weight: 700; }
+
+.print-bar {
+  position: fixed; bottom: 0; inset-inline: 0; background: #fff; border-top: 1px solid #ddd;
+  display: flex; gap: 10px; justify-content: center; padding: 12px; box-shadow: 0 -4px 16px rgba(0,0,0,.08); z-index: 5;
+}
+.print-bar .btn { min-height: 46px; padding: 0 18px; font-size: 16px; }
+.print-bar .hint { width: 100%; text-align: center; font-size: 12px; color: #666; }
+.print-bar .hint.ok { color: #15803d; font-weight: 700; }
+.print-bar .hint.bad { color: #b91c1c; font-weight: 700; }
+
+@media print {
+  @page { margin: 0; }
+  .no-print { display: none !important; }
+  .print-body { background: #fff; padding: 0; display: block; }
+  .ticket { box-shadow: none; width: 80mm; padding: 2mm 3mm; }
+  .ticket.w58 { width: 58mm; }
+}

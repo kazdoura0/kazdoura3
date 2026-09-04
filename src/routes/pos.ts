@@ -113,7 +113,9 @@ pos.get('/print-jobs', async (c) => {
 
 /** Job payload for browser-type printers (rendered by /print/job/:id) */
 pos.get('/print-jobs/:id', async (c) => {
-  const job = await first<any>(c.env.DB, 'SELECT * FROM print_jobs WHERE id=?', c.req.param('id'))
+  const job = await first<any>(c.env.DB,
+    'SELECT j.*, p.type AS printer_type, p.name AS printer_name FROM print_jobs j LEFT JOIN printers p ON p.id=j.printer_id WHERE j.id=?',
+    c.req.param('id'))
   if (!job) return c.json({ ok: false, error: 'المهمة غير موجودة' }, 404)
   return c.json({ ok: true, job: { ...job, payload: JSON.parse(job.payload) } })
 })

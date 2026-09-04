@@ -21,7 +21,7 @@
     online: true,
     sending: false,
     pendingRequestId: null,
-    watchJobs: new Set(),
+    watchJobs: new Map(), // jobId -> tableId
   }
   const root = document.getElementById('app')
 
@@ -297,7 +297,7 @@
     foot.onclick = async (e) => {
       const retry = e.target.closest('[data-retry]')
       if (retry) {
-        try { await api('/api/pos/print-jobs/' + retry.dataset.retry + '/retry', { method: 'POST', auth: false }); toast('تمت إعادة إرسال مهمة الطباعة', 'info'); S.watchJobs.add(retry.dataset.retry); await loadCheck(); renderOrder(); watchPrintJobs() } catch (err) { toast(err.message, 'error') }
+        try { await api('/api/pos/print-jobs/' + retry.dataset.retry + '/retry', { method: 'POST', auth: false }); toast('تمت إعادة إرسال مهمة الطباعة', 'info'); S.watchJobs.set(retry.dataset.retry, S.tableId); await loadCheck(); renderOrder(); watchPrintJobs() } catch (err) { toast(err.message, 'error') }
         return
       }
       if (e.target.closest('#btn-send')) return sendOrder(e.target.closest('#btn-send'))
@@ -337,7 +337,7 @@
         S.draft = {}
         saveDraft()
         toast(r.duplicate ? 'هذا الطلب مُرسل مسبقاً' : S.boot.messages.order_sent_ok || 'تم إرسال الطلب بنجاح', 'success')
-        r.print_jobs.forEach((j) => S.watchJobs.add(j.id))
+        r.print_jobs.forEach((j) => S.watchJobs.set(j.id, S.tableId))
         // browser-type printers: open print page
         r.print_jobs.filter((j) => j.printer_type === 'browser' && j.status === 'pending').forEach((j) => window.open('/print/job/' + j.id, '_blank', 'width=420,height=700'))
         const noPrinter = r.print_jobs.filter((j) => j.status === 'failed')
@@ -374,7 +374,7 @@
         saveOutbox(loadOutbox().filter((x) => x.client_request_id !== o.client_request_id))
         if (S.pendingRequestId === o.client_request_id) { S.pendingRequestId = null; S.draft = {}; saveDraft() }
         toast(r.duplicate ? 'تم التأكد من وصول الطلب السابق (طاولة ' + (tableById(o.table_id) || {}).number + ')' : 'تم إرسال الطلب المعلّق (طاولة ' + (tableById(o.table_id) || {}).number + ')', 'success')
-        r.print_jobs.forEach((j) => S.watchJobs.add(j.id))
+        r.print_jobs.forEach((j) => S.watchJobs.set(j.id, o.table_id))
         if (S.view === 'order' && S.tableId === o.table_id) { await loadCheck(); renderOrder() }
       } catch (e) {
         if (e.code !== 'network' && !(e.status >= 500)) {
@@ -390,15 +390,16 @@
   let watchTimer = null
   async function watchPrintJobs() {
     clearTimeout(watchTimer)
-    const ids = Array.from(S.watchJobs)
+    const ids = Array.from(S.watchJobs.keys())
     if (!ids.length) return
     try {
       const r = await api('/api/pos/print-jobs?ids=' + ids.join(','), { auth: false, retries: 0 })
       let changed = false
       r.jobs.forEach((j) => {
+        const forCurrentTable = S.watchJobs.get(j.id) === S.tableId && S.view === 'order'
         const ex = S.printJobs.find((x) => x.id === j.id)
         if (ex && ex.status !== j.status) { Object.assign(ex, j); changed = true }
-        if (!ex) { S.printJobs.unshift(j); changed = true }
+        if (!ex && forCurrentTable) { S.printJobs.unshift(j); changed = true }
         if (j.status === 'printed' || j.status === 'failed' || j.status === 'cancelled') {
           S.watchJobs.delete(j.id)
           if (ex && ex.status !== j.status) toast(j.status === 'printed' ? `تمت الطباعة: ${j.printer_name}` : `${S.boot.messages.print_fail || 'تعذر الاتصال بالطابعة'}: ${j.printer_name}`, j.status === 'printed' ? 'success' : 'error')
@@ -445,7 +446,7 @@
         const r = await api('/api/pos/checks/' + S.check.id + '/bill', { method: 'POST', auth: false })
         toast('أُرسلت الفاتورة إلى ' + (r.print_job.printer_name || 'طابعة الكاشير'), r.print_job.status === 'failed' ? 'error' : 'success')
         if (r.print_job.printer_type === 'browser' && r.print_job.status === 'pending') window.open('/print/job/' + r.print_job.id, '_blank', 'width=420,height=700')
-        S.watchJobs.add(r.print_job.id)
+        S.watchJobs.set(r.print_job.id, S.tableId)
         await loadCheck()
         const ps = m.querySelector('#bill-print-status')
         if (ps) ps.innerHTML = S.printJobs.filter((j) => j.job_type === 'bill').slice(0, 3).map(pjBadge).join('')
@@ -461,7 +462,7 @@
         ps && ps.addEventListener('click', async (ev) => {
           const rb = ev.target.closest('[data-retry]')
           if (!rb) return
-          try { await api('/api/pos/print-jobs/' + rb.dataset.retry + '/retry', { method: 'POST', auth: false }); S.watchJobs.add(rb.dataset.retry); toast('تمت إعادة المحاولة', 'info'); tick() } catch (err) { toast(err.message, 'error') }
+          try { await api('/api/pos/print-jobs/' + rb.dataset.retry + '/retry', { method: 'POST', auth: false }); S.watchJobs.set(rb.dataset.retry, S.tableId); toast('تمت إعادة المحاولة', 'info'); tick() } catch (err) { toast(err.message, 'error') }
         })
       } catch (e) { toast(e.message, 'error') }
     }))
