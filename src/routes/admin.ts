@@ -153,7 +153,12 @@ admin.delete('/currencies/:code', async (c) => {
   if (cur.is_base) bad('لا يمكن حذف العملة الأساسية')
   const used = await first<{ n: number }>(db, 'SELECT COUNT(*) n FROM products WHERE currency_code=? AND is_deleted=0', code)
   if ((used?.n || 0) > 0) conflict(`لا يمكن حذف العملة: مستخدمة في ${used!.n} منتج`)
-  await run(db, 'DELETE FROM currencies WHERE code=?', code)
+  // soft-deleted products may still reference it (historical snapshots live in order_items) → move them to base
+  const base = await first<Currency>(db, 'SELECT * FROM currencies WHERE is_base=1 LIMIT 1')
+  await db.batch([
+    db.prepare('UPDATE products SET currency_code=? WHERE currency_code=? AND is_deleted=1').bind(base?.code || 'USD', code),
+    db.prepare('DELETE FROM currencies WHERE code=?').bind(code),
+  ])
   await audit(db, 'delete', 'currency', code)
   return c.json({ ok: true, currencies: await getCurrencies(db) })
 })
