@@ -1,0 +1,17 @@
+{
+  "name": "kazdoura-print-bridge",
+  "version": "1.0.0",
+  "description": "Local print agent: pulls print jobs from the Kazdoura server and prints them to ESC/POS network printers (Arabic rendered as raster).",
+  "private": true,
+  "main": "agent.js",
+  "bin": { "kazdoura-bridge": "agent.js" },
+  "scripts": {
+    "start": "node agent.js",
+    "dry-run": "node agent.js --dry-run",
+    "preview": "node preview.js"
+  },
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "@napi-rs/canvas": "^0.1.60"
+  }
+}

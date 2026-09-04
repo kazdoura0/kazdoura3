@@ -1,0 +1,11 @@
+{
+  "server": "https://YOUR-APP.pages.dev",
+  "token": "PASTE_BRIDGE_TOKEN_HERE",
+  "agent": "cashier-laptop",
+  "dry_run": false,
+  "poll_seconds": 3,
+  "heartbeat_seconds": 20,
+  "connect_timeout_ms": 4000,
+  "write_timeout_ms": 8000,
+  "beep_kitchen": true
+}
