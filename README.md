@@ -135,12 +135,14 @@ curl http://localhost:3000/api/health
 - **الحالة**: ✅ نشط — مشروع Pages `kazdoura`، قاعدة D1 `kazdoura-production` (ENAM)، الأسرار `ADMIN_PASSWORD` و`BRIDGE_TOKEN` مضبوطة
 - **GitHub**: https://github.com/kazdoura0/kazdoura3 (فرع `main`)
 
-خطوات النشر:
-1. إنشاء قاعدة الإنتاج: `npx wrangler d1 create kazdoura-production` ووضع `database_id` في `wrangler.jsonc` (حالياً `local-placeholder`).
-2. `npm run db:migrate:prod`
-3. `npm run deploy`
-4. الأسرار: `npx wrangler pages secret put ADMIN_PASSWORD` و`npx wrangler pages secret put BRIDGE_TOKEN`
-5. تشغيل جسر الطباعة في المحل مع `server` = رابط الإنتاج و`token` = `BRIDGE_TOKEN`.
+إعادة النشر بعد أي تعديل (يلزم `CLOUDFLARE_API_TOKEN` في البيئة):
+```bash
+npm run db:migrate:prod                                  # فقط إن أُضيفت ترحيلات جديدة
+npm run build && npx wrangler pages deploy dist --project-name kazdoura --branch main
+```
+تغيير الأسرار: `echo "القيمة" | npx wrangler pages secret put ADMIN_PASSWORD --project-name kazdoura` (ثم إعادة النشر).
+
+جسر الطباعة في المحل: `server = https://kazdoura.pages.dev` و`token = BRIDGE_TOKEN`.
 
 ## ما لم يُنفَّذ بعد / خطوات مقترحة
 
